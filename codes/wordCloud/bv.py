@@ -3,7 +3,18 @@ import pandas
 import jieba
 from wordcloud import WordCloud
 
-PATH = "..\\..\\result\\wordCloud\\"
+
+PATH1 = "..\\..\\result\\wordCloud\\"
+PATH2 = "..\\..\\result\\wordCount\\"
+ORPATH = "..\\..\\data\\barrage\\"
+INDEX = [
+    "cs", "finance", "fun", "music", "skill", "study", "workplace"
+]
+
+index_dict = {
+    "cs": "IT区", "finance": "金融区", "fun": "搞笑区",
+    "music": "音乐区", "skill": "技巧区", "study": "学习区", "workplace": "职场区"
+}
 
 
 def drawWordCloud(words, title):
@@ -14,14 +25,14 @@ def drawWordCloud(words, title):
         title (_type_): _description_
     """
     path = os.path.abspath('..')
-    if not os.path.exists(PATH):
-        os.mkdir(PATH)
+    if not os.path.exists(PATH1):
+        os.mkdir(PATH1)
     '''使用原先准备好的一张照片作为背景图'''
     wc = WordCloud(
         font_path='simkai.ttf', max_words=200, width=1920, height=1080, margin=5, background_color="white"
     )
     wc.generate_from_frequencies(words)
-    wc.to_file(os.path.join(PATH, title+'.png'))
+    wc.to_file(os.path.join(PATH1, title+'.png'))
 
 
 def statistics(texts, stopwords):
@@ -64,22 +75,27 @@ def save(words_dict1, savename):
         alist.append(value_list[i])
         df.loc[row] = alist
         row += 1
-    df.to_csv(PATH + savename + '.csv', encoding='gb18030')
+    df.to_csv(PATH2 + savename + '.csv')
 
 
 if __name__ == '__main__':
     """"""
-    danmu = list()
-    dir_names = ["..\\..\\data\\barrage\\"]
-
-    for dir in dir_names:
-        files = os.listdir(dir)
+    stopwords = open(
+        '..\\..\\resource\\stopwords.txt', 'r', encoding='utf-8'
+    ).read()
+    for d in INDEX:
+        danmu = list()
+        files = os.listdir(ORPATH + d + "\\")
         for file in files:
-            data = pandas.read_csv(dir + file, encoding='gb18030')
-            for i in data['弹幕']:
+            data = pandas.read_csv(
+                ORPATH + d + "\\" + file
+            )
+            for i in data["弹幕"]:
                 danmu.append(i)
-    stopwords = open('..\\..\\resource\\stopwords.txt',
-                     'r', encoding='utf-8').read()
-    words_dict1 = statistics(danmu, stopwords)
-    save(words_dict1, savename='词频统计')
-    drawWordCloud(words_dict1, '词云图')
+        words_dict = statistics(danmu, stopwords)
+        save(
+            words_dict, savename=index_dict[d] + '词频表'
+        )
+        drawWordCloud(
+            words_dict, index_dict[d] + '词云图'
+        )
