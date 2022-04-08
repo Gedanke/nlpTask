@@ -1,5 +1,6 @@
 import re
 import time
+import random
 import pandas
 import requests
 from lxml import etree
@@ -20,18 +21,25 @@ proxies = {
     "http": None,
     "https": None
 }
+# 数据路径
+ORPATH = "..\\..\\resource\\origin\\"
 # 保存路径
-PATH = "..\\..\\data\\barrages\\"
+PATH = "..\\..\\data\\barrageMsg\\"
+INDEX = [
+    "cs", "finance", "fun", "music", "skill", "study", "workplace"
+]
 
 
 class BilibiliSpider:
-    def __init__(self, BV):
+    def __init__(self, BV, index):
         """
         构造要爬取的视频url地址
         Args:
             BV (_type_): _description_
+            index (_type_): _description_
         """
         self.BV = BV
+        self.index = index
         self.BVurl = ROOT_URL+BV
         self.info_table = pandas.DataFrame(
             columns=[
@@ -149,16 +157,22 @@ class BilibiliSpider:
             self.info_table.loc[self.row_cnt] = alist
             self.row_cnt += 1
 
-        self.info_table.to_csv(PATH + self.BV + '.csv', encoding='gb18030')
+        self.info_table.to_csv(
+            PATH + self.index + "\\" + self.BV + '.csv'
+        )
 
 
 if __name__ == '__main__':
-    """"""
-    bv_list = list()
-    bv_list = open("..\\..\\resource\\vedio.txt", "r").readlines()
-    for bv in bv_list:
-        bv = bv.strip("\n")
-        spider = BilibiliSpider(bv)
-        spider.run()
-        time.sleep(1)
-        print('finished', bv)
+    """
+    """
+    for i in INDEX:
+        path = ORPATH + i + ".csv"
+        pd = pandas.read_csv(path)
+        print(path)
+        time.sleep(random.randint(12, 20))
+        for bv in pd["BV号"]:
+            print(bv, i)
+            spider = BilibiliSpider(bv, i)
+            spider.run()
+            time.sleep(random.randint(5, 10))
+            print('finished', bv)

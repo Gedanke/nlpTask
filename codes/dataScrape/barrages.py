@@ -2,6 +2,8 @@ import re
 import csv
 import time
 import json
+import pandas
+import random
 import requests
 
 
@@ -10,8 +12,12 @@ proxies = {
     "http": None,
     "https": None
 }
+ORPATH = "..\\..\\resource\\origin\\"
 # 保存路径
-PATH = "..\\..\\data\\barragesData\\"
+PATH = "..\\..\\data\\barrageData\\"
+INDEX = [
+    "cs", "finance", "fun", "music", "skill", "study", "workplace"
+]
 
 
 def get_content(page, cid):
@@ -49,7 +55,7 @@ def get_content(page, cid):
     return r
 
 
-def get_data(r, bv):
+def get_data(r, i, bv):
     """
     正则表达式匹配弹幕内容
     Args:
@@ -57,7 +63,7 @@ def get_data(r, bv):
         bv (_type_): _description_
     """
     data_list = re.findall(':(.*?)@', r)
-    with open(PATH + bv+"_all" + ".csv", 'a', encoding='gb18030', newline='') as f:
+    with open(PATH + i + "\\" + bv + ".csv", 'a', encoding="gb18030", newline='') as f:
         writer = csv.writer(f)
         if len(data_list) > 0:
             for data in data_list:
@@ -102,12 +108,21 @@ def get_cid(bvid):
 
 if __name__ == '__main__':
     """
+    全弹幕收集，可以跑通，但是很花时间
     """
-    bv_list = list()
-    for bv in open("..\\..\\resource\\vedio.txt", "r").readlines():
-        bv = bv.strip("\n")
-        cid_list = get_cid(bv)
-        for cid in cid_list:
-            for page in range(1, 20):
-                r = get_content(page, cid)
-                get_data(r, bv)
+    for i in INDEX:
+        path = ORPATH + i + ".csv"
+        pd = pandas.read_csv(path)
+        print(path)
+        time.sleep(random.randint(12, 20))
+        for bv in pd["BV号"]:
+            print(bv, i)
+            '''由bv号得到cid列表'''
+            cid_list = get_cid(bv)
+            for cid in cid_list:
+                for page in range(1, 20):
+                    r = get_content(page, cid)
+                    get_data(r, i, bv)
+                    time.sleep(random.randint(1, 3))
+                time.sleep(random.randint(5, 10))
+            print('finished', bv)

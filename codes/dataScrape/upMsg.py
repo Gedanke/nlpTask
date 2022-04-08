@@ -1,9 +1,10 @@
-import json
-import pandas
-import time
-import requests
 import os
 import re
+import json
+import time
+import pandas
+import random
+import requests
 
 
 info_table = pandas.DataFrame(columns=['uid', 'follower'])
@@ -20,21 +21,31 @@ proxies = {
     "http": None,
     "https": None
 }
-PATH = "..\\..\\data\\upmsg\\"
+PATH = "..\\..\\data\\upMsg\\"
 ORPATH = "..\\..\\resource\\origin\\"
+INDEX = [
+    "cs", "finance", "fun", "music", "skill", "study", "workplace"
+]
 
 
 def get_fs(url):
+    """
+
+    Args:
+        url (_type_): _description_
+    """
     global info_table, row_cnt
 
-    res = requests.get(url, headers=headers, proxies=proxies)
+    res = requests.get(
+        url, headers=headers, proxies=proxies
+    )
     rep = json.loads(res.text)
-    alist = []
+    alist = list()
     alist.append(rep['data']['mid'])
     alist.append(rep['data']['follower'])
     info_table.loc[row_cnt] = alist
     row_cnt += 1
-    info_table.to_csv(PATH+'up主粉丝数.csv', encoding='gb18030')
+    info_table.to_csv(PATH + 'up主粉丝数.csv')
 
 
 def main():
@@ -46,8 +57,9 @@ def main():
     for i in filenames:
         if '.csv' in str(i):
             f.append(i)
+
     for i in f:
-        data = pd.read_csv(ORPATH + i, encoding='gb18030')
+        data = pandas.read_csv(ORPATH + i)
         for j in data['up主id']:
             if j in uplist:
                 continue
@@ -55,9 +67,11 @@ def main():
                 uplist.append(j)
                 url = 'https://api.bilibili.com/x/relation/stat?vmid=' + \
                     str(j) + '&jsonp=jsonp'
+                time.sleep(random.randint(2, 5))
                 get_fs(url)
                 print('finished', j)
 
 
 if __name__ == '__main__':
     """"""
+    main()
