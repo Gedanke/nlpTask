@@ -5,8 +5,8 @@ import pyecharts.options as opts
 from pyecharts.charts import Bar
 
 
-ORPARH = ""
-SAVEPATH = ""
+ORPATH = "..\\..\\resource\\origin\\"
+SAVEPATH = "..\\..\\result\\indicator\\"
 
 
 def draw_line(xlist, ylist):
@@ -39,9 +39,9 @@ def main():
     """
     namelist = list()
     numlist = list()
-    files = os.listdir(ORPARH)
+    files = os.listdir(ORPATH)
     for file in files:
-        data = pandas.read_csv(ORPARH + file, encoding='gb18030')
+        data = pandas.read_csv(ORPATH + file)
         for i in range(0, len(data)):
             namelist.append(data['名称'].iloc[i])
             if '万' in str(data['弹幕数'].iloc[i]):

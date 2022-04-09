@@ -5,8 +5,12 @@ import pyecharts.options as opts
 from pyecharts.charts import Bar
 
 
-ORPARH = ""
-SAVEPATH = ""
+ORPATH = "..\\..\\resource\\origin\\"
+SAVEPATH = "..\\..\\result\\indicator\\"
+index_dict = {
+    "cs": "IT区", "finance": "金融区", "fun": "搞笑区",
+    "music": "音乐区", "skill": "技巧区", "study": "学习区", "workplace": "职场区"
+}
 
 
 def draw_line(xlist, ylist, ylist2):
@@ -42,10 +46,10 @@ def main():
     ylist = list()
     ylist2 = list()
 
-    files = os.listdir(ORPARH)
+    files = os.listdir(ORPATH)
     for file in files:
         numlist = list()
-        data = pd.read_csv(ORPARH + file, encoding='gb18030')
+        data = pandas.read_csv(ORPATH + file)
         xlist.append(file.split('.')[0])
         for i in range(0, len(data)):
             if '万' in str(data['弹幕数'].iloc[i]):
@@ -62,7 +66,9 @@ def main():
             numlist.append(c)
         ylist.append(round(sum(numlist) / len(data), 2))
         ylist2.append(max(numlist))
-
+    xlist = [
+        v for v in index_dict.values()
+    ]
     draw_line(xlist, ylist, ylist2)
 
 

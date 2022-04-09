@@ -5,10 +5,9 @@ import pyecharts.options as opts
 from pyecharts.charts import Bar
 
 
-ORPARH = ""
-SAVEPATH = ""
-UPPATH = ""
-
+ORPATH = "..\\..\\resource\\origin\\"
+SAVEPATH = "..\\..\\result\\indicator\\"
+UPPATH = "..\\..\\data\\upMsg\\up主粉丝数.csv"
 
 def draw_line(xlist, ylist):
     """
@@ -37,14 +36,14 @@ def draw_line(xlist, ylist):
 
 def main():
     """"""
-    fansfile = pandas.read_csv(UPPATH, encoding='gb18030')
+    fansfile = pandas.read_csv(UPPATH)
     dict_country = fansfile.set_index('uid').T.to_dict('list')
 
     namelist = list()
     numlist = list()
-    files = os.listdir(ORPARH)
+    files = os.listdir(ORPATH)
     for file in files:
-        data = pd.read_csv(ORPARH + file, encoding='gb18030')
+        data = pandas.read_csv(ORPATH + file)
         for i in range(0, len(data)):
             namelist.append(data['名称'].iloc[i])
             a = dict_country[data['up主id'].iloc[i]][1]
