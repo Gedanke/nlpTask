@@ -1,4 +1,5 @@
 import os
+import json
 import numpy
 import pandas
 import xgboost as xgb
@@ -20,6 +21,9 @@ stopwords = list()
 with open("..\\..\\resource\\stopwords.txt", "r", encoding="utf8") as f:
     for w in f:
         stopwords.append(w.strip())
+
+'''异常值纪录'''
+error_bv = set()
 
 
 class Bayes:
@@ -50,9 +54,14 @@ class Bayes:
         clf = MultinomialNB()
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
-        # print(metrics.classification_report(y_test, y_pred))
-        # print("准确率:", metrics.accuracy_score(y_test, y_pred))
-        return metrics.classification_report(y_test, y_pred), metrics.accuracy_score(y_test, y_pred)
+        pd = metrics.classification_report(y_test, y_pred)
+        acc = metrics.accuracy_score(y_test, y_pred)
+        auc = -1
+        try:
+            auc = metrics.roc_auc_score(y_test, y_pred)
+        except ValueError:
+            pass
+        return pd, acc, auc
 
 
 class Svm:
@@ -83,7 +92,14 @@ class Svm:
         clf = svm.SVC()
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
-        return metrics.classification_report(y_test, y_pred), metrics.accuracy_score(y_test, y_pred)
+        pd = metrics.classification_report(y_test, y_pred)
+        acc = metrics.accuracy_score(y_test, y_pred)
+        auc = -1
+        try:
+            auc = metrics.roc_auc_score(y_test, y_pred)
+        except ValueError:
+            pass
+        return pd, acc, auc
 
 
 class Xgboost:
@@ -128,31 +144,44 @@ class Xgboost:
         )
         dmatrix = xgb.DMatrix(X_test)
         y_pred = model.predict(dmatrix)
-        '''先计算AUC'''
-        auc_score = metrics.roc_auc_score(y_test, y_pred)          
         '''二值化'''
-        y_pred = list(map(lambda x:1 if x > 0.5 else 0, y_pred))   
-        print(metrics.classification_report(y_test, y_pred))
-        print("准确率:", metrics.accuracy_score(y_test, y_pred))
-        print("AUC:", auc_score)
-        
-def k_fold(data):
+        y_pred = list(map(lambda x: 1 if x > 0.5 else 0, y_pred))
+        pd = metrics.classification_report(y_test, y_pred)
+        acc = metrics.accuracy_score(y_test, y_pred)
+        auc = -1
+        try:
+            auc = metrics.roc_auc_score(y_test, y_pred)
+        except ValueError:
+            pass
+        return pd, acc, auc
+
+
+def k_fold(data, path, file):
     """
 
     Args:
         data (_type_): _description_
-
-    Returns:
-        _type_: _description_
+        path (_type_): _description_
+        file (_type_): _description_
     """
-    result_acc_bayes = dict()
+    '''存放k折acc，auc'''
+    result_bayes = dict()
+    result_svm = dict()
+    result_xgboost = dict()
 
+    '''存放k折pandas.DataFrame'''
+    writer_bayes = open(path + "bayes\\" + file + ".txt", "w")
+    writer_svm = open(path + "svm\\" + file + ".txt", "w")
+    writer_xgboost = open(path + "xgboost\\" + file + ".txt", "w")
+
+    '''划分'''
     tmp_data = utils.shuffle(data)
     k = 10
     k_sample_count = tmp_data.shape[0] // k
 
     '''根据k折，划分数据集'''
     for fold in range(k):
+        print(fold)
         validation_begin = k_sample_count * fold
         validation_end = k_sample_count * (fold + 1)
         '''验证集（或者叫测试集）'''
@@ -167,47 +196,101 @@ def k_fold(data):
         train_data.index = numpy.arange(len(train_data))
         validation_data.index = numpy.arange(len(validation_data))
 
-        '''不同方法 '''
-        # b=Bayes(train_data, validation_data)
-        # pd,ac=b.run()
-        # result_acc_bayes[fold+1]=ac
-        # s = Svm(train_data, validation_data)
-        # pd, ac = s.run()
-        # print(pd)
-        # print(ac)
-        x=Xgboost(train_data, validation_data)
-        x.run()
+        '''不同方法'''
+        '''Bayes'''
+        b = Bayes(train_data, validation_data)
+        pd, ac, auc = b.run()
+        if auc == -1:
+            error_bv.add(path + "bayes\\" + file + ".txt")
+            error_bv.add(path + "bayes\\" + file + ".json")
+        else:
+            result_bayes[fold + 1] = [
+                ac, auc
+            ]
+            writer_bayes.write(pd + "\n")
+
+        '''svm'''
+        s = Svm(train_data, validation_data)
+        pd, ac, auc = s.run()
+        if auc == -1:
+            error_bv.add(path + "svm\\" + file + ".txt")
+            error_bv.add(path + "svm\\" + file + ".json")
+        else:
+            result_svm[fold + 1] = [
+                ac, auc
+            ]
+            writer_svm.write(pd + "\n")
+
+        '''xgboost'''
+        x = Xgboost(train_data, validation_data)
+        pd, ac, auc = x.run()
+        if auc == -1:
+            error_bv.add(path + "xgboost\\" + file + ".txt")
+            error_bv.add(path + "xgboost\\" + file + ".json")
+        else:
+            result_xgboost[fold + 1] = [
+                ac, auc
+            ]
+            writer_xgboost.write(pd + "\n")
+
+    '''txt'''
+    writer_bayes.close()
+    writer_svm.close()
+    writer_xgboost.close()
+
+    '''json'''
+    with open(path + "bayes\\" + file + ".json", "w", encoding="utf-8") as f:
+        f.write(json.dumps(result_bayes, ensure_ascii=False))
+    with open(path + "svm\\" + file + ".json", "w", encoding="utf-8") as f:
+        f.write(json.dumps(result_svm, ensure_ascii=False))
+    with open(path + "xgboost\\" + file + ".json", "w", encoding="utf-8") as f:
+        f.write(json.dumps(result_xgboost, ensure_ascii=False))
+
 
 def main():
     """
+    主方法
     """
     for dir in INDEX:
-        files = os.listdir(ORPATH+dir)
+        files = os.listdir(ORPATH + dir)
         for file in files:
-            p = ORPATH+dir+"\\" + file
+            p = ORPATH + dir+"\\" + file
+            print(p)
             data = pandas.read_csv(p)
             data["标签"] = 0
-            l = len(d)
+            l = len(data)
+            '''赋予标签'''
             for i in range(l):
                 s = SnowNLP(str(data.loc[i]["弹幕"])).sentiments
                 data.loc[i, "标签"] = 0 if float(s) < 0.5 else 1
-                k_fold(data)
+            save_path = PATH + dir + "\\"
+            '''k 折交叉验证'''
+            k_fold(data, save_path, file.split(".")[0])
+
+    '''删除异常文件'''
+    for f in error_bv:
+        os.remove(f)
 
 
 def test():
-    """"""
-    p = "..\\..\\data\\barrage\\cs\\BV1aE411o7qd.csv"
+    """
+    test
+    """
+    p = "..\\..\\data\\barrage\\cs\\BV1pE411c7tx.csv"
     data = pandas.read_csv(p)
     data["标签"] = 0
     l = len(data)
     for i in range(l):
         s = SnowNLP(str(data.loc[i]["弹幕"])).sentiments
         data.loc[i, "标签"] = 0 if float(s) < 0.5 else 1
-    k_fold(data)
+    save_path = "..\\..\\result\\emotion\\cs\\"
+    k_fold(data, save_path, "BV1pE411c7tx")
+    for f in error_bv:
+        os.remove(f)
 
 
 if __name__ == '__main__':
     """
     """
-    # main()
-    test()
+    main()
+    # test()
