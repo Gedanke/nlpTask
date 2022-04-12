@@ -25,6 +25,7 @@ bilibili 视频弹幕分析，含爬虫，数据处理，词云分析，词频�
     * [origin](resource/origin/): 存放不同分区的视频csv文件，每个csv文件含有该分区的若干个视频
     * [stopwords.txt](resource/stopwords.txt): 存放分词的文本文件
 * [result](result): 存放结果
+    * [barrage](result/barrage/): 存放弹幕数量
     * [wordCloud](result/wordCloud/): 存放词云
     * [wordCount](result/wordCount/): 存放词频
     * [indicator](result/indicator/): 存放指标
