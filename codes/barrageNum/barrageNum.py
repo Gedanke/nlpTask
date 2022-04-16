@@ -4,6 +4,7 @@ import pandas
 import pyecharts.options as opts
 from pyecharts.charts import Bar
 
+
 ORPATH = "..\\..\\resource\\origin\\"
 SAVEPATH = "..\\..\\result\\barrage\\"
 
@@ -19,7 +20,8 @@ def draw_line(xlist, ylist):
         .add_yaxis("视频弹幕数", ylist)
         .set_global_opts(
             title_opts=opts.TitleOpts("TOP弹幕视频"),
-            xaxis_opts=opts.AxisOpts(axislabel_opts=opts.LabelOpts(rotate=-15)),
+            xaxis_opts=opts.AxisOpts(
+                axislabel_opts=opts.LabelOpts(rotate=-15)),
             brush_opts=opts.BrushOpts(),
         )
         .render(SAVEPATH + 'TOP弹幕视频.html')
@@ -33,7 +35,7 @@ def main():
     numlist = list()
     files = os.listdir(ORPATH)
     for file in files:
-        data = pandas.read_csv(ORPATH + file,encoding="utf-8")
+        data = pandas.read_csv(ORPATH + file, encoding="utf-8")
         for i in range(0, len(data)):
             namelist.append(data['名称'].iloc[i])
             if '万' in str(data['弹幕数'].iloc[i]):
@@ -57,4 +59,3 @@ def main():
 if __name__ == '__main__':
     """"""
     main()
-    

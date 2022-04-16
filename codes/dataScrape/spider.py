@@ -5,6 +5,7 @@ import pandas
 import requests
 from lxml import etree
 
+
 # 请求头
 headers = {
     'Accept-Encoding': 'gzip, deflate, sdch',
@@ -40,7 +41,7 @@ class BilibiliSpider:
         """
         self.BV = BV
         self.index = index
-        self.BVurl = ROOT_URL+BV
+        self.BVurl = ROOT_URL + BV
         self.info_table = pandas.DataFrame(columns=['弹幕'])
         self.row_cnt = 1
 

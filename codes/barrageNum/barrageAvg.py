@@ -42,13 +42,14 @@ def main():
 
     files = os.listdir(ORPATH)
     for file in files:
-        numlist = []
+        numlist = list()
         data = pandas.read_csv(ORPATH + file)
         xlist.append(file.split('.')[0])
         for i in range(0, len(data)):
             if '万' in str(data['弹幕数'].iloc[i]):
                 numlist.append(
-                    int(float(str(data['弹幕数'].iloc[i]).split('万')[0]) * 10000))
+                    int(float(str(data['弹幕数'].iloc[i]).split('万')[0]) * 10000)
+                )
             else:
                 numlist.append(int(data['弹幕数'].iloc[i]))
         ylist.append(round(sum(numlist) / len(data), 2))

@@ -45,7 +45,7 @@ def statistics(texts, stopwords):
     Returns:
         _type_: _description_
     """
-    words_dict = {}
+    words_dict = dict()
     for text in texts:
         temp = jieba.cut(text, cut_all=True)
         for t in temp:

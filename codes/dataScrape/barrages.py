@@ -31,7 +31,8 @@ def get_content(page, cid):
         _type_: _description_
     """
     url = 'https://api.bilibili.com/x/v2/dm/web/seg.so?type=1&oid={}&pid=40112794&segment_index={}'.format(
-        cid, page)
+        cid, page
+    )
     headers = {
         "authority": "api.bilibili.com",
         "method": "GET",
@@ -80,7 +81,8 @@ def get_cid(bvid):
         _type_: _description_
     """
     url = 'https://api.bilibili.com/x/player/pagelist?bvid={}&jsonp=jsonp'.format(
-        bvid)
+        bvid
+    )
     headers = {
         "authority": "api.bilibili.com",
         "method": "GET",

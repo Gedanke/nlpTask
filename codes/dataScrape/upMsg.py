@@ -51,9 +51,9 @@ def get_fs(url):
 def main():
     """
     """
+    f = list()
     uplist = list()
     filenames = os.listdir(ORPATH)  # 设定调用文件的相对路径
-    f = list()
     for i in filenames:
         if '.csv' in str(i):
             f.append(i)

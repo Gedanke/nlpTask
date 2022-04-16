@@ -5,7 +5,18 @@ bilibili 视频弹幕分析，含爬虫，数据处理，词云分析，词频�
 所需库:
 
 ```shell
-
+numpy
+pandas   
+lxml   
+json   
+requests   
+pyecharts   
+jieba   
+snownlp
+matplotlib   
+wordcloud  
+sklearn
+xgboost
 ```
 
 项目目录如下：
@@ -31,6 +42,4 @@ bilibili 视频弹幕分析，含爬虫，数据处理，词云分析，词频�
     * [indicator](result/indicator/): 存放指标
     * [emotion](result/emotion/): 存放情感
 * [readme](readme.md): 说明文件
-
-
 
